@@ -13,7 +13,7 @@
   "license": "MIT",
   "dependencies": {
     "hono": "^3.0.3",
-    "nanoid": "3",
+    "nanoid": "4",
     "zod": "^3.20.6"
   },
   "devDependencies": {
