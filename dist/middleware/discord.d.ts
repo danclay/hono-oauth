@@ -77,7 +77,7 @@ export interface Options {
      * Provide this function for the middleware to fetch old token results (must be in format this middleware provided)
      * Default is disabled
      */
-    getPastTokenRes?: () => Promise<DiscordTokenRes>;
+    getPastTokenRes?: () => Promise<DiscordTokenRes | undefined>;
     /**
      * If enabled, will fetch user data from discord and provide it to {@link DiscordOptions.saveTokenRes}
      * @default true
