@@ -1,11 +1,11 @@
 on:
   push:
     branches:
-    - development
-name: Build Dev
+    - main
+name: Build Package
 jobs:
   build:
-    name: Build dev package
+    name: Build package
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -27,7 +27,7 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3.8.0
       with:
         deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-        publish_branch: dev
+        publish_branch: build
         publish_dir: ./build
         user_name: 'github-actions[bot]'
         user_email: 'github-actions[bot]@users.noreply.github.com'
