@@ -15,6 +15,11 @@ const callbackQueryScheme = z.object({
 	state: z.string().optional()
 });
 
+const errorCbQueryScheme = z.object({
+	error: z.string(),
+	error_description: z.string().optional()
+});
+
 export interface DiscordTokenRes {
 	access_token: string;
 	token_type: "Bearer";
@@ -158,51 +163,7 @@ export const discordOauth = (options: Options): MiddlewareHandler => {
 		const query = c.req.query();
 		const initialQueryData = initialQueryScheme.safeParse(query);
 		const callbackQueryData = callbackQueryScheme.safeParse(query);
-
-		// check if authorized
-		if (options.getPastTokenRes) {
-			const pastTokenRes = await options.getPastTokenRes();
-			if (pastTokenRes) {
-				if (pastTokenRes.expires_at < (Date.now() / 1000)) { // not expired
-					if (pastTokenRes.expires_at - 60e6 * 24 < (Date.now() / 1000)) { // expires soon
-						// refresh token
-						const headers = new Headers();
-						headers.append("Content-Type", "application/x-www-form-urlencoded");
-
-						const urlencoded = new URLSearchParams();
-						urlencoded.append("client_id", options.clientId);
-						urlencoded.append("client_secret", options.clientSecret);
-						urlencoded.append("grant_type", "refresh_token");
-						urlencoded.append("code", pastTokenRes.refresh_token);
-
-						const requestOptions = {
-							method: "POST",
-							headers,
-							body: urlencoded
-						};
-
-						const response = await fetch("https://discord.com/api/v10/oauth2/token", requestOptions)
-							.catch(error => {
-								throw new Error(error);
-							});
-						const tokenResult = await response.json();
-						options.saveTokenRes(tokenResult);
-					} else {
-						let authorized = true;
-						if (options.fetchUserDataOnCheck) {
-							try {
-								await fetchUserData(pastTokenRes);
-							}
-							catch (e) { // reauthorize
-								authorized = false;
-							}
-						}
-						if (authorized) return await next();
-					}
-				}
-			}
-		}
-		// continue if expired
+		const errorCbQueryData = errorCbQueryScheme.safeParse(query);
 
 		if (callbackQueryData.success) { // callback (comes first due to query params)
 			const code = callbackQueryData.data.code;
@@ -229,12 +190,15 @@ export const discordOauth = (options: Options): MiddlewareHandler => {
 					throw new Error(error);
 				});
 			const tokenResult = await response.json();
+			if (tokenResult.error) { // invalid code
+				return c.text("401: " + tokenResult.error, 401);
+			}
 			// verify scopes
 			if (options.checkScopes) {
 				const resultScope = tokenResult.scope.split(" ");
 				const filtered = options.scope.filter(scope => resultScope.includes(scope));
 				if (filtered.length != options.scope.length) {
-					throw new HTTPException(403, {message: "Scopes modified, try again"});
+					return c.text("403: Scopes modified, try again", 403);
 				}
 			}
 
@@ -255,7 +219,7 @@ export const discordOauth = (options: Options): MiddlewareHandler => {
 					}
 				}
 				if (!stateData) {
-					throw new HTTPException(403, {message: "Invalid state (probably expired, try again)"});
+					return c.text("403: Invalid state (probably expired, try again)", 403);
 				}
 				if (options.stateStorageDelete) { // delete
 					options.stateStorageDelete(state);
@@ -269,13 +233,74 @@ export const discordOauth = (options: Options): MiddlewareHandler => {
 			}
 
 			await next(); // continue
+		} else if (errorCbQueryData.success) { // if error
+			return c.text("401: " + errorCbQueryData.data.error, 401);
 		} else if (initialQueryData.success) { // initial call
 			const redirect = initialQueryData.data.redirect ?? options.redirectUrl;
 			if (redirect) {
 				if (!checkValidRedirect(options.validRedirectPrefixes!, redirect)) {
-					throw new HTTPException(400, {message: "Invalid redirect url"});
+					return c.text("400: Invalid redirect url", 400);
 				}
 			}
+
+			// check if already authorized
+			if (options.getPastTokenRes) {
+				const pastTokenRes = await options.getPastTokenRes();
+				if (pastTokenRes) {
+					if (pastTokenRes.expires_at > Math.floor(Date.now() / 1000)) { // not expired
+						if (pastTokenRes.expires_at - 24 * 60 * 60 < Math.floor(Date.now() / 1000)) { // expires soon
+							// refresh token
+							const headers = new Headers();
+							headers.append("Content-Type", "application/x-www-form-urlencoded");
+	
+							const urlencoded = new URLSearchParams();
+							urlencoded.append("client_id", options.clientId);
+							urlencoded.append("client_secret", options.clientSecret);
+							urlencoded.append("grant_type", "refresh_token");
+							urlencoded.append("code", pastTokenRes.refresh_token);
+	
+							const requestOptions = {
+								method: "POST",
+								headers,
+								body: urlencoded
+							};
+	
+							const response = await fetch("https://discord.com/api/v10/oauth2/token", requestOptions)
+								.catch(error => {
+									throw new Error(error);
+								});
+							const tokenResult = await response.json();
+							if (!tokenResult.error) {
+								options.saveTokenRes(tokenResult);
+								if (redirect) {
+									return c.redirect(redirect);
+								} else {
+									return await next();
+								}
+							}
+						} else {
+							let authorized = true;
+							if (options.fetchUserDataOnCheck) {
+								try {
+									await fetchUserData(pastTokenRes);
+								}
+								catch (e) { // reauthorize
+									authorized = false;
+								}
+							}
+							if (authorized) {
+								if (redirect) {
+									return c.redirect(redirect);
+								} else {
+									return await next();
+								}
+							}
+						}
+					}
+				}
+			}
+
+			// continue if unauthorized
 
 			let state;
 			if (options.useState) {
@@ -304,7 +329,7 @@ export const discordOauth = (options: Options): MiddlewareHandler => {
 			if (state) url.searchParams.set("state", state);
 			return c.redirect(url.toString());
 		} else {
-			throw new HTTPException(400, {message: "Invalid query parameters"});
+			return c.text("400: Invalid query parameters", 400);
 		}
 	};
 };
