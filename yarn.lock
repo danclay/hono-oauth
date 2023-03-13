@@ -705,10 +705,10 @@ has@^1.0.3:
   dependencies:
     function-bind "^1.1.1"
 
-hono@^3.0.3:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/hono/-/hono-3.0.3.tgz#26b62bece753941dd3d290d03ff3338f71535017"
-  integrity sha512-6Lb/TPH7Me1GAjFR7k/duzTcHS5y+rxFyL6Ky0kYQQlu92l99t53CFMVcdNUpHeStarPOs4Uzl413zIvxaI15A==
+hono@^3.0.4:
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/hono/-/hono-3.0.4.tgz#7c990d62273b794a3e9c9622868774a5c02f8eae"
+  integrity sha512-vGfcFNZ0nT9LKDflIHxK72+jBBr0IMU8TAGFd4bhISEP7KXEP+bICEwvQyQc2QRXjiunsvFX2U4+GbFMx34MpQ==
 
 ignore@^5.2.0:
   version "5.2.4"
