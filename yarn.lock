@@ -22,10 +22,10 @@
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.35.0.tgz#b7569632b0b788a0ca0e438235154e45d42813a7"
   integrity sha512-JXdzbRiWclLVoD8sNUjR443VVlYqiYmDVT6rGUEIEHU5YJW0gaVZwV2xgM7D4arkvASqD0IlLUVjHiFuxaftRw==
 
-"@hono/node-server@^0.2.4":
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/@hono/node-server/-/node-server-0.2.4.tgz#b8ab4a25c9f8491cd2fa1c8eafda32c98e0ff93a"
-  integrity sha512-oFIOpEnikeCLTfU3PXMdWTB7gglkmtrXu7e88Tr4BPVOIPLUgBmwnfj/LzqIVEpy2gSU/lcEZsmJyQxC+zkErQ==
+"@hono/node-server@^0.5.1":
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/@hono/node-server/-/node-server-0.5.1.tgz#e2ef605937e3658ceb78e742ae46f93b4ac9a7c9"
+  integrity sha512-w7cFwGWCTjjhrrR0mR5DheNwiL8PSiK5rp/+XvpDcsLobkaHIDTf+ePM9lGHDvkbeIJ45G7krhhM4v7gI1TpSQ==
   dependencies:
     "@remix-run/web-fetch" "^4.3.2"
     "@remix-run/web-file" "^3.0.2"
