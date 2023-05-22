@@ -19,7 +19,7 @@
   "devDependencies": {
     "@hono/node-server": "^0.2.4",
     "@types/node": "^18.14.6",
-    "@typescript-eslint/eslint-plugin": "^5.53.0",
+    "@typescript-eslint/eslint-plugin": "^5.59.6",
     "@typescript-eslint/parser": "^5.53.0",
     "cross-env": "^7.0.3",
     "discord-api-types": "^0.37.35",
