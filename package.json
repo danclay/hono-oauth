@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "@hono/node-server": "^0.2.4",
-    "@types/node": "^18.14.6",
+    "@types/node": "^20.2.5",
     "@typescript-eslint/eslint-plugin": "^5.53.0",
     "@typescript-eslint/parser": "^5.53.0",
     "cross-env": "^7.0.3",
